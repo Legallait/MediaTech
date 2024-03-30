@@ -53,18 +53,17 @@ public class Document implements IDocument {
         if (reservePar == null && empruntePar == null) {
             reservePar = ab;
         } else {
-            throw new EmpruntException("Impossible d'emprunter le document. Raison : " + e.getMessage());
+            throw new EmpruntException("Impossible de réserver le document");
         }
     }
 
     @Override
     public void empruntPar(Abonne ab) throws EmpruntException {
-        if (empruntePar == null || reservePar == ab) {
+        if (empruntePar == null && (reservePar == null || reservePar.equals(ab))) {
             empruntePar = ab;
             reservePar = null;
-        }
-        else {
-            throw new EmpruntException("Impossible d'emprunter le document. Raison : " + e.getMessage());
+        } else {
+            throw new EmpruntException("Impossible d'emprunter le document");
         }
     }
 

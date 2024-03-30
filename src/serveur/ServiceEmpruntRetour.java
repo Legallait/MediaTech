@@ -62,7 +62,7 @@ public class ServiceEmpruntRetour extends Service {
                     quit = true;
                     premierPassage = true;
                 }
-             //   quit = Codage.decoder(in.readLine()).equalsIgnoreCase("oui") ? false : true;
+                //   quit = Codage.decoder(in.readLine()).equalsIgnoreCase("oui") ? false : true;
             }
 
             line = "Connexion terminee. Merci d'avoir utilise nos services.";
@@ -95,7 +95,7 @@ public class ServiceEmpruntRetour extends Service {
     }
 
 
-    private int emprunt(int numeroAdherent, BufferedReader in, PrintWriter out, boolean premierPassage) throws IOException, InterruptedException, EmpruntException {
+    private int emprunt(int numeroAdherent, BufferedReader in, PrintWriter out, boolean premierPassage) throws IOException, EmpruntException, InterruptedException {
         String line;
         if (premierPassage) {
             out.println(Codage.coder("Veuillez entrer votre numero d'adherent : "));
@@ -123,28 +123,33 @@ public class ServiceEmpruntRetour extends Service {
             out.println(Codage.coder(line));
             line = Codage.decoder(in.readLine());
         }
+
         Document document = Data.getDocument(numDocument);
-        if (Data.estReserver(document) && !Data.adherentAReserver(document, abonne)) {
+        if (!Data.documentReserver(document)) {
+            System.out.println(Data.AbonneAEmpreunter(abonne));
             out.print(Codage.coder("Le document est reserve par une autre personne.\n"));
-        } else if (Data.estEmprunter(document)) {
+        }
+        else if (Data.estEmprunter(document) && !Data.adherentAReserver(document, abonne)) {
             out.print(Codage.coder("Le document est deja emprunte.\n"));
-        } else {
-            if (Data.AbonnePeutEmprunterDVD(document, abonne)) {
-                out.print(Codage.coder("le DVD est pour personne majeur\n"));
-            } else {
-                try {
-                    Data.emprunter(document, abonne);
-                    Data.retirerReservation(document);
-                    out.print(Codage.coder("Emprunt effectue avec succes.\n"));
-                } catch (EmpruntException e) {
-                    // Relancer l'exception EmpruntException
-                    throw e;
-                }
+        }
+        if(Data.estUnDVD(document)){
+            if(Data.AbonnePeutEmprunterDVD(document, abonne)){
+                Data.emprunter(document, abonne);
+                Data.retirerReservation(document);
+                out.print(Codage.coder("Emprunt effectue avec succes.\n"));
+            }
+            else{
+                out.print(Codage.coder("Le DVD est pour personne majeur\n"));
             }
         }
+        else {
+                Data.emprunter(document, abonne);
+                Data.retirerReservation(document);
+                out.print(Codage.coder("Emprunt effectue avec succes.\n"));
+            }
+
         return numeroAdherent;
     }
-
 
     public static int numIsCorrect(String str) {
         try {
