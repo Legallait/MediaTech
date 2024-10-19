@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 public class Data implements Runnable {
-    private static final String DB_URL = "";
-    private static final String USER = "";
-    private static final String PASS = "";
+    private static final String DB_URL = System.getenv("DB_URL");
+    private static final String USER = System.getenv("DB_USER");
+    private static final String PASS = System.getenv("DB_PASS");
 
     private static final LinkedList<Document> documents = new LinkedList<>();
     private static final LinkedList<Abonne> abonnes = new LinkedList<>();
