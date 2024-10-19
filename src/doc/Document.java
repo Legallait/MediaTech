@@ -1,6 +1,8 @@
 package doc;
 
+import app.Data;
 import app.IDocument;
+import doc.types.DVD;
 
 public class Document implements IDocument {
     private Abonne reservePar = null;
@@ -25,7 +27,7 @@ public class Document implements IDocument {
         this.numero = numero;
         this.titre = titre;
     }
-
+    @Override
     public int getNumero() {
         return this.numero;
     }
@@ -50,31 +52,41 @@ public class Document implements IDocument {
 
     @Override
     public void reservationPour(Abonne ab) throws EmpruntException {
-        if (reservePar == null && empruntePar == null) {
-            reservePar = ab;
-        } else {
-            throw new EmpruntException("Impossible de réserver le document");
+        synchronized (this){
+            // TODO : à faire
         }
     }
 
     @Override
     public void empruntPar(Abonne ab) throws EmpruntException {
-        if (empruntePar == null && (reservePar == null || reservePar.equals(ab))) {
-            empruntePar = ab;
-            reservePar = null;
-        } else {
-            throw new EmpruntException("Impossible d'emprunter le document");
+        synchronized (this) {
+            if(this instanceof DVD && !Data.abonnePeutPasEmprunterDVD(this, ab)){
+                throw new EmpruntException("Desole, vous ne pouvez pas emprunter ce DVD, car vous êtes mineur.");
+            }
+            if (empruntePar == null && reservePar == null) {
+                if(Data.emprunt(this, ab)) {
+                    empruntePar = null;
+                    reservePar = ab;
+                    Data.ajoutEmprunt(this, ab);
+                }
+            } else {
+                throw new EmpruntException("Le document est deja reserve ou emprunte.");
+            }
+
         }
     }
 
     @Override
     public void retour() {
-        if (empruntePar != null) {
-            //TODO: envoyer le retour à la BD
-            empruntePar = null;
-        } else if (reservePar != null) {
-            // TODO: envoyer le retour à la BD
-            reservePar = null;
+        synchronized (this){
+            Data.retour(this);
+            if (empruntePar != null) {
+                empruntePar = null;
+            } else if (reservePar != null) {
+                Data.retirerReservation(this);
+                reservePar = null;
+            }
+
         }
     }
 
